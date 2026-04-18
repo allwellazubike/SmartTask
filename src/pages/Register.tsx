@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -10,6 +10,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +30,8 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className="min-h-screen bg-[#06080d] flex flex-col relative overflow-hidden selection:bg-orange-500/30">
@@ -90,13 +93,21 @@ const Register = () => {
               PW
             </div>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
-              className="w-full bg-[#0d121c]/80 backdrop-blur-xl border border-slate-800/80 text-cream rounded-[20px] pl-14 pr-5 py-4 focus:outline-none focus:border-orange-500/50 focus:bg-[#121926] transition-all font-light text-[16px] placeholder-slate-600"
+              className="w-full bg-[#0d121c]/80 backdrop-blur-xl border border-slate-800/80 text-cream rounded-[20px] pl-14 pr-12 py-4 focus:outline-none focus:border-orange-500/50 focus:bg-[#121926] transition-all font-light text-[16px] placeholder-slate-600"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-4 flex items-center text-slate-400 hover:text-cream transition-colors focus:outline-none"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
           <button

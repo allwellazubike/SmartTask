@@ -97,10 +97,15 @@ router.post('/:id/breakdown', async (req: AuthRequest, res) => {
 
     const breakdownResult = await generateTaskBreakdown(task.title, task.description);
     
-    const formattedSubtasks = breakdownResult.subtasks.map((title: string) => ({
-      title: title,
-      completed: false
-    }));
+    const formattedSubtasks = breakdownResult.subtasks.map((item: any) => {
+      if (typeof item === 'string') {
+        return { title: item, completed: false };
+      }
+      return { 
+        title: item.title || 'Untitled Subtask', 
+        completed: !!item.completed 
+      };
+    });
     
     const updatedTask = await prisma.task.update({
       where: { id },

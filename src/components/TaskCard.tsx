@@ -26,12 +26,26 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
   const [isExpanding, setIsExpanding] = useState(false);
   const [loadingBreakdown, setLoadingBreakdown] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   
-  const hasBreakdown = task.breakdown && task.breakdown.length > 0;
+  // Robustly handle the breakdown data to prevent React rendering errors
+  const safeBreakdown: Subtask[] = Array.isArray(task.breakdown) 
+    ? (task.breakdown as any[]).map(item => {
+        if (typeof item === 'string') return { title: item, completed: false };
+        // If it's the bugged nested object { title: { title: '...' }, completed: false }
+        if (item && typeof item.title === 'object' && item.title !== null) {
+          return { title: item.title.title || JSON.stringify(item.title), completed: !!item.completed };
+        }
+        return { title: String(item?.title || 'Untitled'), completed: !!item?.completed };
+      })
+    : [];
+
+  const hasSafeBreakdown = safeBreakdown.length > 0;
 
   const handleComplete = async () => {
     try {
       setIsCompleting(true);
+      setShowConfirm(false);
       await api.patch(`/tasks/${task.id}/complete`);
       onRefresh();
     } catch (error) {
@@ -41,7 +55,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
   };
 
   const handleBreakdown = async () => {
-    if (hasBreakdown) {
+    if (hasSafeBreakdown) {
       setIsExpanding(!isExpanding);
       return;
     }
@@ -66,10 +80,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
         <div className="flex gap-3.5 flex-1 min-w-0">
           
           <button 
-            onClick={handleComplete} 
+            onClick={() => setShowConfirm(true)} 
             disabled={isCompleting}
             className="text-slate-600 hover:text-orange-500 mt-0.5 transition-all group shrink-0"
-            aria-label="Complete Task"
+            aria-label="Mark as Complete"
           >
             <div className="relative">
               <Circle size={24} strokeWidth={1.5} className="group-hover:opacity-0 transition-opacity" />
@@ -112,7 +126,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
           onClick={handleBreakdown}
           disabled={loadingBreakdown}
           className={`flex items-center justify-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all w-full sm:w-auto
-            ${hasBreakdown || isExpanding 
+            ${hasSafeBreakdown || isExpanding 
               ? 'bg-[#151c2b] text-slate-300 hover:text-cream' 
               : 'text-orange-400 bg-orange-500/5 hover:bg-orange-500/20 active:scale-95'
             }
@@ -120,7 +134,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
         >
           {loadingBreakdown ? (
             <span className="animate-pulse">Synthesizing steps...</span>
-          ) : hasBreakdown ? (
+          ) : hasSafeBreakdown ? (
             <>Milestones {isExpanding ? <ChevronUp size={14} strokeWidth={2.5}/> : <ChevronDown size={14} strokeWidth={2.5}/>}</>
           ) : (
              <>
@@ -131,12 +145,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
       </div>
 
       {/* AI Breakdown List */}
-      {(isExpanding && hasBreakdown && task.breakdown) && (
+      {(isExpanding && hasSafeBreakdown) && (
         <div className="mt-4 pt-4 border-t border-slate-800/50 pl-2 pr-1 relative">
           <div className="absolute left-[20px] top-4 bottom-0 w-px bg-slate-800"></div>
           
           <ul className="space-y-4">
-            {task.breakdown.map((subtask, idx) => (
+            {safeBreakdown.map((subtask, idx) => (
               <li key={idx} className="flex gap-3.5 items-start text-[14px] font-light text-slate-400 group cursor-pointer hover:text-cream transition-colors">
                 <div className="mt-0.5 relative z-10 bg-[#0d121c] rounded-full shrink-0">
                   {subtask.completed ? (
@@ -149,6 +163,29 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-[320px] shadow-2xl animate-in zoom-in-95 duration-200">
+            <h4 className="text-lg font-semibold text-slate-50 mb-2">Finish Task?</h4>
+            <p className="text-sm text-slate-400 mb-6">Are you sure you want to mark "<span className="text-slate-200">{task.title}</span>" as complete?</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => setShowConfirm(false)}
+                className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleComplete}
+                className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold transition-all text-sm shadow-lg shadow-orange-900/20"
+              >
+                Complete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
