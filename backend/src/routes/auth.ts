@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../utils/prisma';
@@ -6,7 +6,8 @@ import prisma from '../utils/prisma';
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
 
-router.post('/register', async (req, res) => {
+// POST /api/auth/register
+router.post('/register', async (req: Request, res: Response) => {
   try {
     const { email, password, name } = req.body;
 
@@ -27,11 +28,13 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user: { id: user.id, email: user.email, name: user.name } });
   } catch (error) {
+    console.error("Registration Error:", error);
     res.status(500).json({ error: 'Server error during registration' });
   }
 });
 
-router.post('/login', async (req, res) => {
+// POST /api/auth/login
+router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -48,6 +51,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(500).json({ error: 'Server error during login' });
   }
 });

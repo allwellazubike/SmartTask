@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, ChevronDown, ChevronUp, CheckCircle, Circle, Play } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, Circle, Play, CalendarDays } from 'lucide-react';
 import api from '../api/axios';
 
 interface Subtask {
@@ -33,7 +33,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
     try {
       setIsCompleting(true);
       await api.patch(`/tasks/${task.id}/complete`);
-      onRefresh(); // Should pull the refreshed list from /focus which filters completed
+      onRefresh();
     } catch (error) {
       console.error('Failed to complete task', error);
       setIsCompleting(false);
@@ -59,77 +59,93 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
   };
 
   return (
-    <div className={`bg-[#0a0e17] border border-slate-800 rounded-2xl p-6 transition-all duration-300 hover:border-slate-700 hover:shadow-2xl hover:-translate-y-0.5 ${isCompleting ? 'opacity-50 scale-[0.98]' : 'opacity-100'}`}>
-      <div className="flex justify-between items-start">
-        <div className="flex gap-5">
+    <div className={`bg-[#0d121c] border border-slate-800/80 rounded-[20px] p-4 sm:p-5 transition-all duration-300 hover:border-slate-700/80 shadow-sm ${isCompleting ? 'opacity-40 scale-[0.98]' : 'opacity-100'}`}>
+      
+      {/* Top Row: Completion circle & Text Content */}
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex gap-3.5 flex-1 min-w-0">
+          
           <button 
             onClick={handleComplete} 
             disabled={isCompleting}
-            className="text-slate-600 hover:text-green-500 mt-1 transition-all group"
+            className="text-slate-600 hover:text-orange-500 mt-0.5 transition-all group shrink-0"
+            aria-label="Complete Task"
           >
-            <Circle size={26} strokeWidth={1.5} className="group-hover:opacity-0 absolute transition-opacity" />
-            <CheckCircle size={26} strokeWidth={1.5} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative">
+              <Circle size={24} strokeWidth={1.5} className="group-hover:opacity-0 transition-opacity" />
+              <CheckCircle size={24} strokeWidth={1.5} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500" />
+            </div>
           </button>
           
-          <div>
-            <h3 className="text-xl font-medium text-cream tracking-tight leading-snug">{task.title}</h3>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[17px] font-medium text-cream tracking-tight leading-snug break-words">
+              {task.title}
+            </h3>
             
-            <div className="flex items-center gap-4 mt-3 text-sm text-slate-500 font-light">
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-500 font-light">
               {task.category && (
-                <span className="bg-[#111827] border border-slate-800 text-slate-300 px-3 py-1 rounded-full text-xs font-medium tracking-wide">
+                <span className="bg-[#1a2133] border border-slate-700/50 text-slate-300 px-2.5 py-0.5 rounded-full font-medium shrink-0">
                   {task.category}
                 </span>
               )}
               {task.due_date && (
-                <div className="flex items-center gap-1.5 opacity-80">
-                  <Calendar size={14} />
+                <div className="flex items-center gap-1 opacity-80 shrink-0">
+                  <CalendarDays size={13} />
                   <span>{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                 </div>
               )}
-              <div className="text-xs font-semibold text-orange-500 bg-orange-600/10 px-2 py-1 rounded-md">
-                Score: {task.priorityScore.toFixed(1)}
+              
+              {/* Updated P-Rate Badge */}
+              <div className="font-medium text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-md shrink-0 flex items-baseline gap-1.5 border border-orange-500/20">
+                <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500/80">P-Rate</span>
+                <span>{task.priorityScore.toFixed(1)}</span>
               </div>
+              
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Action Row: Break down button */}
+      <div className="mt-4 flex justify-end pl-10 border-t border-slate-800/50 pt-3">
         <button 
           onClick={handleBreakdown}
           disabled={loadingBreakdown}
-          className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all
+          className={`flex items-center justify-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all w-full sm:w-auto
             ${hasBreakdown || isExpanding 
-              ? 'bg-slate-800 text-cream hover:bg-slate-700' 
-              : 'text-orange-500 hover:bg-orange-500/10 active:scale-95'
+              ? 'bg-[#151c2b] text-slate-300 hover:text-cream' 
+              : 'text-orange-400 bg-orange-500/5 hover:bg-orange-500/20 active:scale-95'
             }
           `}
         >
           {loadingBreakdown ? (
-            <span className="animate-pulse">Synthesizing...</span>
+            <span className="animate-pulse">Synthesizing steps...</span>
           ) : hasBreakdown ? (
-            <>Breakdown {isExpanding ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}</>
+            <>Milestones {isExpanding ? <ChevronUp size={14} strokeWidth={2.5}/> : <ChevronDown size={14} strokeWidth={2.5}/>}</>
           ) : (
              <>
-              <Play size={12} className="fill-current"/> Split Task
+              <Play size={10} className="fill-current"/> Auto Break Down
              </>
           )}
         </button>
       </div>
 
+      {/* AI Breakdown List */}
       {(isExpanding && hasBreakdown && task.breakdown) && (
-        <div className="mt-6 pt-6 border-t border-slate-800 pl-12 pr-4 relative">
-          <div className="absolute left-[29px] top-6 bottom-0 w-px bg-slate-800"></div>
-          <h4 className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-4">Milestones</h4>
+        <div className="mt-4 pt-4 border-t border-slate-800/50 pl-2 pr-1 relative">
+          <div className="absolute left-[20px] top-4 bottom-0 w-px bg-slate-800"></div>
+          
           <ul className="space-y-4">
             {task.breakdown.map((subtask, idx) => (
-              <li key={idx} className="flex gap-4 items-start text-sm font-light text-slate-400 group cursor-pointer hover:text-cream transition-colors">
-                <div className="mt-0.5 relative z-10 bg-[#0a0e17] rounded-full">
+              <li key={idx} className="flex gap-3.5 items-start text-[14px] font-light text-slate-400 group cursor-pointer hover:text-cream transition-colors">
+                <div className="mt-0.5 relative z-10 bg-[#0d121c] rounded-full shrink-0">
                   {subtask.completed ? (
-                    <CheckCircle size={18} className="text-orange-500" />
+                    <CheckCircle size={16} className="text-orange-500" />
                   ) : (
-                    <Circle size={18} className="text-slate-700 group-hover:text-orange-500" />
+                    <Circle size={16} className="text-slate-600 group-hover:text-orange-500" />
                   )}
                 </div>
-                <span className={`${subtask.completed ? "line-through text-slate-600" : ""} leading-relaxed`}>{subtask.title}</span>
+                <span className={`${subtask.completed ? "line-through text-slate-600" : ""} leading-snug pt-px`}>{subtask.title}</span>
               </li>
             ))}
           </ul>

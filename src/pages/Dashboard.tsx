@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import CommandBar from '../components/CommandBar';
 import FocusMode from '../components/FocusMode';
-import { LogOut } from 'lucide-react';
+import { LogOut, Home } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -13,31 +13,47 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#05080f] relative overflow-hidden">
-      {/* Background ambient light */}
-      <div className="absolute top-[-20%] left-[20%] w-[800px] h-[500px] bg-orange-600/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <div className="min-h-screen bg-[#06080d] relative overflow-hidden flex flex-col">
+      {/* Dynamic ambient background tuned for mobile */}
+      <div className="absolute top-[-5%] left-[-10%] w-[250px] h-[250px] bg-orange-600/10 rounded-full blur-[90px] pointer-events-none"></div>
       
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
-        <header className="flex justify-between items-center mb-20 border-b border-slate-800/50 pb-8">
-          <div>
-            <h1 className="text-3xl font-medium tracking-tight text-cream">
-              Smart<span className="text-orange-500 font-semibold">Task</span>
-            </h1>
-            <p className="text-sm text-slate-400 mt-2 font-light">Welcome back, {user?.name}</p>
+      <div className="relative z-10 w-full max-w-lg mx-auto flex-1 flex flex-col pb-24">
+        
+        {/* Header - Mobile Snappy */}
+        <header className="flex justify-between items-center px-5 pt-8 pb-4">
+          <div className="flex gap-3 items-center">
+             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-[12px] shadow-[0_0_15px_-3px_rgba(234,88,12,0.4)] flex items-center justify-center">
+              <Home size={18} className="text-white" strokeWidth={2.5}/>
+            </div>
+            <div>
+              <h1 className="text-xl font-display font-medium text-cream tracking-tight leading-none">
+                SmartTask
+              </h1>
+              <p className="text-[12px] text-slate-400 font-light mt-1 w-32 truncate">Hi, {user?.name}</p>
+            </div>
           </div>
+          
           <button 
             onClick={logout}
-            className="group flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-cream transition-all px-4 py-2 rounded-full border border-slate-800 hover:border-slate-700 bg-slate-900/50 hover:bg-slate-800/50"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-[#0d121c] border border-slate-800 text-slate-400 hover:text-orange-500 hover:border-orange-500/30 transition-colors shadow-sm"
+            aria-label="Logout"
           >
-            Sign Out
-            <LogOut size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            <LogOut size={16} strokeWidth={2} />
           </button>
         </header>
 
-        <main className="space-y-16">
-          <CommandBar onTaskCreated={handleTaskCreated} />
+        {/* Scrollable Main Area */}
+        <main className="flex-1 overflow-y-auto px-4 mt-6">
           <FocusMode refreshTrigger={refreshTrigger} />
         </main>
+
+        {/* Floating Command Bar at bottom for easy thumb access on mobile */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#06080d] via-[#06080d]/90 to-transparent z-50">
+          <div className="max-w-lg mx-auto">
+            <CommandBar onTaskCreated={handleTaskCreated} />
+          </div>
+        </div>
+
       </div>
     </div>
   );

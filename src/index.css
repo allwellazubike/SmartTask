@@ -6,9 +6,9 @@
   --color-orange-500: #f97316;
   --color-orange-600: #ea580c;
   --color-cream: #fbf9f6;
-  
-  --font-sans: 'DM Sans', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Outfit", sans-serif;
 }
 
 @layer base {
@@ -18,8 +18,13 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -30,12 +35,12 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-slate-900); 
+  background: var(--color-slate-900);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b; 
+  background: #1e293b;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-orange-600); 
+  background: var(--color-orange-600);
 }
