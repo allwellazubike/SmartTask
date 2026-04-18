@@ -112,4 +112,29 @@ router.post('/:id/breakdown', async (req: AuthRequest, res) => {
   }
 });
 
+// PATCH /api/tasks/:id/complete
+router.patch('/:id/complete', async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    
+    // update task
+    const updatedTask = await prisma.task.updateMany({
+      where: { id, user_id: req.userId! },
+      data: {
+        is_completed: true,
+        completed_at: new Date()
+      }
+    });
+
+    if (updatedTask.count === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.json({ message: 'Task marked as completed' });
+  } catch (error) {
+    console.error('Task complete error:', error);
+    res.status(500).json({ error: 'Failed to complete task' });
+  }
+});
+
 export default router;

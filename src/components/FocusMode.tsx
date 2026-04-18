@@ -29,20 +29,20 @@ const FocusMode: React.FC<FocusModeProps> = ({ refreshTrigger }) => {
   }, [refreshTrigger]);
 
   return (
-    <div className="mt-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="bg-orange-500/20 p-2 rounded-lg">
-          <Target className="text-orange-500" size={20} />
+    <div className="max-w-3xl mx-auto">
+      <div className="flex items-center gap-4 mb-8 pl-2">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2.5 rounded-xl shadow-[0_0_15px_-3px_rgba(234,88,12,0.5)]">
+          <Target className="text-white" size={20} strokeWidth={2} />
         </div>
-        <h2 className="text-xl font-semibold text-cream">Focus Mode</h2>
+        <h2 className="text-2xl font-light text-cream">Hyper Focus</h2>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-10">
-          <Loader2 className="animate-spin text-slate-500" />
+        <div className="flex justify-center py-20">
+          <Loader2 className="animate-spin text-orange-500 opacity-50" size={32} />
         </div>
       ) : tasks.length === 0 ? (
-        <div className="text-center py-10 border border-dashed border-slate-700 rounded-xl text-slate-500">
+        <div className="text-center py-24 border border-dashed border-slate-800 rounded-3xl text-slate-500 font-light bg-slate-900/30">
           You have no active tasks. Enjoy your time!
         </div>
       ) : (
