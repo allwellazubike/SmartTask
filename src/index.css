@@ -1,11 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
-  body {
-    @apply bg-slate-900 text-cream font-sans antialiased;
-  }
+
 }
 
 /* Custom scrollbar to maintain sleek aesthetic */
