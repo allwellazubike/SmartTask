@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://smarttask-be.pxxl.click", 
+  baseURL: "https://smarttask-be.pxxl.click/api", 
 });
 
 
