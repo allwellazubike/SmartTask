@@ -27,14 +27,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
   const [loadingBreakdown, setLoadingBreakdown] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  
+
   // Robustly handle the breakdown data to prevent React rendering errors
-  const safeBreakdown: Subtask[] = Array.isArray(task.breakdown) 
-    ? (task.breakdown as any[]).map(item => {
+  const safeBreakdown: Subtask[] = Array.isArray(task.breakdown)
+    ? (task.breakdown as any[]).map((item) => {
         if (typeof item === 'string') return { title: item, completed: false };
         // If it's the bugged nested object { title: { title: '...' }, completed: false }
         if (item && typeof item.title === 'object' && item.title !== null) {
-          return { title: item.title.title || JSON.stringify(item.title), completed: !!item.completed };
+          return {
+            title: item.title.title || JSON.stringify(item.title),
+            completed: !!item.completed,
+          };
         }
         return { title: String(item?.title || 'Untitled'), completed: !!item?.completed };
       })
@@ -73,29 +76,35 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
   };
 
   return (
-    <div className={`bg-[#0d121c] border border-slate-800/80 rounded-[20px] p-4 sm:p-5 transition-all duration-300 hover:border-slate-700/80 shadow-sm ${isCompleting ? 'opacity-40 scale-[0.98]' : 'opacity-100'}`}>
-      
+    <div
+      className={`bg-[#0d121c] border border-slate-800/80 rounded-[20px] p-4 sm:p-5 transition-all duration-300 hover:border-slate-700/80 shadow-sm ${
+        isCompleting ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+      }`}
+    >
       {/* Top Row: Completion circle & Text Content */}
       <div className="flex justify-between items-start gap-3">
         <div className="flex gap-3.5 flex-1 min-w-0">
-          
-          <button 
-            onClick={() => setShowConfirm(true)} 
+          <button
+            onClick={() => setShowConfirm(true)}
             disabled={isCompleting}
             className="text-slate-600 hover:text-orange-500 mt-0.5 transition-all group shrink-0"
             aria-label="Mark as Complete"
           >
             <div className="relative">
               <Circle size={24} strokeWidth={1.5} className="group-hover:opacity-0 transition-opacity" />
-              <CheckCircle size={24} strokeWidth={1.5} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500" />
+              <CheckCircle
+                size={24}
+                strokeWidth={1.5}
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500"
+              />
             </div>
           </button>
-          
+
           <div className="flex-1 min-w-0">
             <h3 className="text-[17px] font-medium text-cream tracking-tight leading-snug break-words">
               {task.title}
             </h3>
-            
+
             <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-500 font-light">
               {task.category && (
                 <span className="bg-[#1a2133] border border-slate-700/50 text-slate-300 px-2.5 py-0.5 rounded-full font-medium shrink-0">
@@ -105,16 +114,22 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
               {task.due_date && (
                 <div className="flex items-center gap-1 opacity-80 shrink-0">
                   <CalendarDays size={13} />
-                  <span>{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                  <span>
+                    {new Date(task.due_date).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
                 </div>
               )}
-              
-              {/* Updated P-Rate Badge */}
+
+              {/* P-Rate Badge */}
               <div className="font-medium text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-md shrink-0 flex items-baseline gap-1.5 border border-orange-500/20">
-                <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500/80">P-Rate</span>
+                <span className="text-[9px] font-bold tracking-widest uppercase text-orange-500/80">
+                  P-Rate
+                </span>
                 <span>{task.priorityScore.toFixed(1)}</span>
               </div>
-              
             </div>
           </div>
         </div>
@@ -122,63 +137,69 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onRefresh }) => {
 
       {/* Action Row: Break down button */}
       <div className="mt-4 flex justify-end pl-10 border-t border-slate-800/50 pt-3">
-        <button 
+        <button
           onClick={handleBreakdown}
           disabled={loadingBreakdown}
-          className={`flex items-center justify-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all w-full sm:w-auto
-            ${hasSafeBreakdown || isExpanding 
-              ? 'bg-[#151c2b] text-slate-300 hover:text-cream' 
+          className={`flex items-center justify-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all w-full sm:w-auto ${
+            hasSafeBreakdown || isExpanding
+              ? 'bg-[#151c2b] text-slate-300 hover:text-cream'
               : 'text-orange-400 bg-orange-500/5 hover:bg-orange-500/20 active:scale-95'
-            }
-          `}
+          }`}
         >
           {loadingBreakdown ? (
             <span className="animate-pulse">Synthesizing steps...</span>
           ) : hasSafeBreakdown ? (
-            <>Milestones {isExpanding ? <ChevronUp size={14} strokeWidth={2.5}/> : <ChevronDown size={14} strokeWidth={2.5}/>}</>
+            <>
+              Milestones {isExpanding ? <ChevronUp size={14} strokeWidth={2.5} /> : <ChevronDown size={14} strokeWidth={2.5} />}
+            </>
           ) : (
-             <>
-              <Play size={10} className="fill-current"/> Auto Break Down
-             </>
+            <>
+              <Play size={10} className="fill-current" /> Auto Break Down
+            </>
           )}
         </button>
       </div>
 
-      {/* AI Breakdown List */}
-      {(isExpanding && hasSafeBreakdown) && (
+      {/* AI Breakdown List – Refined without circles */}
+      {isExpanding && hasSafeBreakdown && (
         <div className="mt-4 pt-4 border-t border-slate-800/50 pl-2 pr-1 relative">
           <div className="absolute left-[20px] top-4 bottom-0 w-px bg-slate-800"></div>
-          
-          <ul className="space-y-4">
+          <ul className="space-y-3.5">
             {safeBreakdown.map((subtask, idx) => (
-              <li key={idx} className="flex gap-3.5 items-start text-[14px] font-light text-slate-400 group cursor-pointer hover:text-cream transition-colors">
-                <div className="mt-0.5 relative z-10 bg-[#0d121c] rounded-full shrink-0">
+              <li key={idx} className="flex gap-3 items-start text-[14px] font-light text-slate-400 hover:text-slate-300 transition-colors">
+                {/* Non-clickable status indicator – no circles */}
+                <span className="mt-0.5 shrink-0 w-4 text-center">
                   {subtask.completed ? (
-                    <CheckCircle size={16} className="text-orange-500" />
+                    <span className="text-orange-500 text-sm font-medium">✓</span>
                   ) : (
-                    <Circle size={16} className="text-slate-600 group-hover:text-orange-500" />
+                    <span className="text-slate-500 text-sm">•</span>
                   )}
-                </div>
-                <span className={`${subtask.completed ? "line-through text-slate-600" : ""} leading-snug pt-px`}>{subtask.title}</span>
+                </span>
+                <span className={`${subtask.completed ? 'line-through text-slate-600' : ''} leading-snug`}>
+                  {subtask.title}
+                </span>
               </li>
             ))}
           </ul>
         </div>
       )}
+
       {/* Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-[320px] shadow-2xl animate-in zoom-in-95 duration-200">
             <h4 className="text-lg font-semibold text-slate-50 mb-2">Finish Task?</h4>
-            <p className="text-sm text-slate-400 mb-6">Are you sure you want to mark "<span className="text-slate-200">{task.title}</span>" as complete?</p>
+            <p className="text-sm text-slate-400 mb-6">
+              Are you sure you want to mark "<span className="text-slate-200">{task.title}</span>" as complete?
+            </p>
             <div className="grid grid-cols-2 gap-3">
-              <button 
+              <button
                 onClick={() => setShowConfirm(false)}
                 className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-all text-sm"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleComplete}
                 className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold transition-all text-sm shadow-lg shadow-orange-900/20"
               >
